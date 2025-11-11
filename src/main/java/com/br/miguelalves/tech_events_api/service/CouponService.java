@@ -1,0 +1,33 @@
+package com.br.miguelalves.tech_events_api.service;
+
+import java.util.Date;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.br.miguelalves.tech_events_api.domain.coupon.Coupon;
+import com.br.miguelalves.tech_events_api.domain.coupon.CouponRequestDTO;
+import com.br.miguelalves.tech_events_api.domain.event.Event;
+import com.br.miguelalves.tech_events_api.repositories.CouponRepository;
+import com.br.miguelalves.tech_events_api.repositories.EventRepository;
+
+@Service
+public class CouponService {
+
+    @Autowired
+    private CouponRepository couponRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    public Coupon addCouponToEvent(UUID eventId, CouponRequestDTO couponData) {
+        Event event = eventRepository.findById(eventId).get();
+        Coupon coupon = new Coupon();
+        coupon.setCode(couponData.code());
+        coupon.setDiscount(couponData.discount());
+        coupon.setValid(new Date(couponData.valid()));
+        coupon.setEvent(event);
+        return couponRepository.save(coupon);
+    }
+}
