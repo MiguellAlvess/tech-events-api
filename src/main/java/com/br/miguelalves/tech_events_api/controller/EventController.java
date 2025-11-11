@@ -2,9 +2,11 @@ package com.br.miguelalves.tech_events_api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.br.miguelalves.tech_events_api.domain.event.Event;
 import com.br.miguelalves.tech_events_api.domain.event.EventRequestDTO;
@@ -16,9 +18,20 @@ public class EventController {
 
     @Autowired
     private EventService eventService;
-    
-    public ResponseEntity<Event> create(@RequestBody EventRequestDTO body) {
-        Event event = this.eventService.createEvent(body);
+
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<Event> create(
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("date") Long date,
+            @RequestParam("city") String city,
+            @RequestParam("uf") String uf,
+            @RequestParam("remote") Boolean remote,
+            @RequestParam("eventUrl") String eventUrl,
+            @RequestParam(value = "imageUrl", required = false) MultipartFile imageUrl) {
+        EventRequestDTO eventRequestDTO = new EventRequestDTO(title, description, date, city, uf, remote, eventUrl,
+                imageUrl);
+        Event event = eventService.createEvent(eventRequestDTO);
         return ResponseEntity.ok(event);
     }
 }
