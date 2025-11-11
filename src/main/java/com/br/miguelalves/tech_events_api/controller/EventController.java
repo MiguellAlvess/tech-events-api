@@ -1,7 +1,10 @@
 package com.br.miguelalves.tech_events_api.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.br.miguelalves.tech_events_api.domain.event.Event;
 import com.br.miguelalves.tech_events_api.domain.event.EventRequestDTO;
+import com.br.miguelalves.tech_events_api.domain.event.EventResponseDTO;
 import com.br.miguelalves.tech_events_api.service.EventService;
 
 @RestController
@@ -33,5 +37,12 @@ public class EventController {
                 imageUrl);
         Event event = eventService.createEvent(eventRequestDTO);
         return ResponseEntity.ok(event);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<EventResponseDTO>> getAll(@RequestParam(defaultValue = "0") int page,
+            @RequestParam int size) {
+        List<EventResponseDTO> events = eventService.getAllEvents(page, size);
+        return ResponseEntity.ok(events);
     }
 }
