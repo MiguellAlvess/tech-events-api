@@ -14,7 +14,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.br.miguelalves.tech_events_api.domain.event.Event;
 import com.br.miguelalves.tech_events_api.domain.event.EventRequestDTO;
 
-
 @Service
 public class EventService {
 
@@ -26,16 +25,19 @@ public class EventService {
 
     public Event createEvent(EventRequestDTO data) {
         String imageUrl = null;
-        if(data.imageUrl() != null) {
-           imageUrl = this.uploadImage(data.imageUrl());
+
+        if (data.imageUrl() != null) {
+            imageUrl = uploadImage(data.imageUrl());
         }
-        Event newEvent  = new Event();
+
+        Event newEvent = new Event();
         newEvent.setTitle(data.title());
         newEvent.setDescription(data.description());
         newEvent.setDate(new Date(data.date()).toString());
         newEvent.setEventUrl(data.eventUrl());
         newEvent.setRemote(data.remote());
         newEvent.setImageUrl(imageUrl);
+
         return newEvent;
     }
 
@@ -43,12 +45,11 @@ public class EventService {
         String fileName = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
 
         try {
-            File file = this.convertMultiPartToFile(multipartFile);
+            File file = convertMultiPartToFile(multipartFile);
             s3Client.putObject(bucketName, fileName, file);
             file.delete();
             return s3Client.getUrl(bucketName, fileName).toString();
         } catch (Exception e) {
-            System.out.println("Error uploading file to S3: " + e.getMessage());
             return null;
         }
     }
