@@ -66,6 +66,45 @@ public class EventService {
         }
     }
 
+    public List<EventResponseDTO> getUpComingEvents(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Event> eventsPage = this.eventRepository.findUpComingEvents(new Date(), pageable);
+        return eventsPage.map(event -> new EventResponseDTO(event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                new Date(event.getDate()),
+                event.getAddress().getCity() != null ? event.getAddress().getCity() : "",
+                event.getAddress().getUf() != null ? event.getAddress().getUf() : "",
+                event.getRemote(),
+                event.getEventUrl(),
+                event.getImageUrl()))
+                .stream().toList();
+    }
+
+    public List<EventResponseDTO> getFilteredEvents(int page, int size, String city, String uf, Date startDate,
+            Date endDate) {
+        city = (city != null) ? city : "";
+        uf = (uf != null) ? uf : "";
+        startDate = (startDate != null) ? startDate : new Date(0);
+        endDate = (endDate != null) ? endDate : new Date();
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Event> eventsPage = this.eventRepository.findFilteredEvents(city, uf, startDate, endDate,
+                pageable);
+        return eventsPage.map(event -> new EventResponseDTO(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                new Date(event.getDate()),
+                event.getAddress().getCity() != null ? event.getAddress().getCity() : "",
+                event.getAddress().getUf() != null ? event.getAddress().getUf() : "",
+                event.getRemote(),
+                event.getEventUrl(),
+                event.getImageUrl()))
+                .stream().toList();
+    }
+
     private File convertMultiPartToFile(MultipartFile multipartFile) throws Exception {
         File convFile = new File(multipartFile.getOriginalFilename());
         FileOutputStream fos = new FileOutputStream(convFile);
@@ -74,11 +113,4 @@ public class EventService {
         return convFile;
     }
 
-    public List<EventResponseDTO> getUpComingEvents(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Event> eventsPage = this.eventRepository.findUpComingEvents(new Date(), pageable);
-        return eventsPage.map(event -> new EventResponseDTO(event.getId(), event.getTitle(), event.getDescription(),
-                new Date(event.getDate()), "", "", event.getRemote(), event.getEventUrl(),
-                event.getImageUrl())).stream().toList();
-    }
 }
