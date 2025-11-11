@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.services.s3.AmazonS3;
 import com.br.miguelalves.tech_events_api.domain.event.Event;
 import com.br.miguelalves.tech_events_api.domain.event.EventRequestDTO;
+import com.br.miguelalves.tech_events_api.repositories.EventRepository;
 
 @Service
 public class EventService {
@@ -23,13 +24,14 @@ public class EventService {
     @Autowired
     private AmazonS3 s3Client;
 
+    @Autowired
+    private EventRepository eventRepository;
+
     public Event createEvent(EventRequestDTO data) {
         String imageUrl = null;
-
         if (data.imageUrl() != null) {
             imageUrl = uploadImage(data.imageUrl());
         }
-
         Event newEvent = new Event();
         newEvent.setTitle(data.title());
         newEvent.setDescription(data.description());
@@ -37,13 +39,12 @@ public class EventService {
         newEvent.setEventUrl(data.eventUrl());
         newEvent.setRemote(data.remote());
         newEvent.setImageUrl(imageUrl);
-
+        eventRepository.save(newEvent);
         return newEvent;
     }
 
     public String uploadImage(MultipartFile multipartFile) {
         String fileName = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
-
         try {
             File file = convertMultiPartToFile(multipartFile);
             s3Client.putObject(bucketName, fileName, file);
