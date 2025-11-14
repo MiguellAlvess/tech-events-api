@@ -1,6 +1,7 @@
 package com.br.miguelalves.tech_events_api.service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,5 +30,10 @@ public class CouponService {
         coupon.setValid(new Date(couponData.valid()));
         coupon.setEvent(event);
         return couponRepository.save(coupon);
+    }
+
+    
+    public List<Coupon> consultCoupons(UUID eventId, Date currentDate) {
+        return couponRepository.findByEventIdAndValidAfter(eventId, currentDate);
     }
 }

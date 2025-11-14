@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.br.miguelalves.tech_events_api.domain.address.Address;
+import com.br.miguelalves.tech_events_api.domain.coupon.Coupon;
 import com.br.miguelalves.tech_events_api.domain.event.Event;
+import com.br.miguelalves.tech_events_api.domain.event.EventDetailsDTO;
 import com.br.miguelalves.tech_events_api.domain.event.EventRequestDTO;
 import com.br.miguelalves.tech_events_api.domain.event.EventResponseDTO;
 import com.br.miguelalves.tech_events_api.repositories.EventRepository;
@@ -35,6 +40,9 @@ public class EventService {
     @Autowired
     private AddressService addressService;
 
+    @Autowired
+    private CouponService couponService;
+
     public Event createEvent(EventRequestDTO data) {
         String imageUrl = null;
         if (data.imageUrl() != null) {
@@ -52,6 +60,29 @@ public class EventService {
             addressService.createAddress(data, newEvent);
         }
         return newEvent;
+    }
+    public EventDetailsDTO getEventDetails(UUID eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        Optional<Address> address = addressService.findByEventId(eventId);
+        List<Coupon> coupons = couponService.consultCoupons(eventId, new Date());
+        List<EventDetailsDTO.CouponDTO> couponDTOs = coupons.stream()
+                .map(coupon -> new EventDetailsDTO.CouponDTO(
+                        coupon.getCode(),
+                        coupon.getDiscount(),
+                        coupon.getValid()))
+                .collect(Collectors.toList());
+        return new EventDetailsDTO(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                new Date(event.getDate()),
+                address.isPresent() ? address.get().getCity() : "",
+                address.isPresent() ? address.get().getUf() : "",
+                event.getImageUrl(),
+                event.getEventUrl(),
+                couponDTOs);
     }
 
     public String uploadImage(MultipartFile multipartFile) {

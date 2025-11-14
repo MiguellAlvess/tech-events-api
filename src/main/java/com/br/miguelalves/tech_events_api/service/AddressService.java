@@ -1,5 +1,8 @@
 package com.br.miguelalves.tech_events_api.service;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.br.miguelalves.tech_events_api.domain.address.Address;
@@ -18,5 +21,9 @@ public class AddressService {
         address.setUf(data.uf());
         address.setEvent(event);
         return addressRepository.save(address);
+    }
+
+      public Optional<Address> findByEventId(UUID eventId) {
+        return addressRepository.findByEventId(eventId);
     }
 }
